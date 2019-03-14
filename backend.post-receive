@@ -1,0 +1,45 @@
+#!/usr/bin/env bash
+
+# Change user to "strike" for exclude permissions conflicts
+# TODO: fix changing user promt password problem
+# TODO: check this shit: https://unix.stackexchange.com/a/115090/215360
+#su strike
+
+PROJECT_REPOSITORY_DIRECTORY="/home/strike/repos/backend.git"
+PROJECT_DIRECTORY="/home/strike/www/backend"
+LARADOCK_DIRECTORY="${PROJECT_DIRECTORY}/laradock"
+
+echo "PROJECT_REPOSITORY_DIRECTORY: ${PROJECT_REPOSITORY_DIRECTORY}"
+echo "PROJECT_DIRECTORY: ${PROJECT_DIRECTORY}"
+echo "LARADOCK_DIRECTORY: ${LARADOCK_DIRECTORY}"
+
+while read oldrev newrev ref
+do
+    # only checking out the master (or whatever branch you would like to deploy)
+    if [[ $ref =~ .*/production$ ]];
+    then
+        # Copy sources to the project directory
+        echo "production ref received. Deploying \"production\" branch to production..."
+        git --work-tree="${PROJECT_DIRECTORY}/" --git-dir="${PROJECT_REPOSITORY_DIRECTORY}/" checkout -f
+
+        #echo "Change laradock git submodule directory and update..."
+        # TODO: fix user promt password problem from bitbucket (maybe fix: generating SSH key)
+        #cd "${LARADOCK_DIRECTORY}" && git pull origin master
+
+        # Change project sources working directory
+        #cd "${PROJECT_DIRECTORY}"
+
+        # Rebuild docker images and recreate containers (only services what was been updated)
+        # TODO: fix changing user promt password problem
+        #sudo docker-compose up -d --build nginx mysql redis
+
+        # Build and compose application
+        #cd ..
+        # TODO: fix changing user promt password problem
+        #sudo docker exec -u laradock strikepro_workspace_1 "composer install \
+        #    && php artisan migrate"
+    else
+        echo "Ref $ref successfully received. Doing nothing: only the \"production\" branch may be deployed on this server."
+    fi
+done
+

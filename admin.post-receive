@@ -1,0 +1,23 @@
+#!/usr/bin/env bash
+
+PROJECT_REPOSITORY_DIRECTORY="/home/strike/repositories/frontend/admin.git"
+PROJECT_DIRECTORY="/home/strike/frontend/admin"
+
+echo "PROJECT_REPOSITORY_DIRECTORY: ${PROJECT_REPOSITORY_DIRECTORY}"
+echo "PROJECT_DIRECTORY: ${PROJECT_DIRECTORY}"
+
+while read oldrev newrev ref
+do
+    if [[ $ref =~ .*/production$ ]];
+    then
+        # Copy sources to the project directory
+        echo "Deploying \"production\" branch..."
+        git --work-tree="${PROJECT_DIRECTORY}/" --git-dir="${PROJECT_REPOSITORY_DIRECTORY}/" checkout -f
+
+	# Install packages & build application
+        cd $PROJECT_DIRECTORY && yarn install --verbose && yarn build
+    else
+        echo "Ref $ref successfully received. Doing nothing: only the \"production\" branch may be deployed on this server."
+    fi
+done
+
